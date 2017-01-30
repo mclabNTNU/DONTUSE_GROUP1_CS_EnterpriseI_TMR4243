@@ -10,7 +10,7 @@
 				<String>CSE1</String>
 			</Property>
 			<Property Name="Version">
-				<String>1.0.0.99</String>
+				<String>1.0.0.102</String>
 			</Property>
 			<Property Name="Creator">
 				<String />
@@ -1298,7 +1298,7 @@
 									<I32>139024</I32>
 								</Property>
 								<Property Name="DLL Timestamp">
-									<Double>3568637182.7423325</Double>
+									<Double>3568638257.3684483</Double>
 								</Property>
 								<Property Name="Decimation">
 									<I32>1</I32>
