@@ -1,11 +1,15 @@
 /*
  * ctrl_sixaxis2thruster.h
  *
+ * Academic License - for use in teaching, academic research, and meeting
+ * course requirements at degree granting institutions only.  Not for
+ * government, commercial, or other organizational use.
+ *
  * Code generation for model "ctrl_sixaxis2thruster".
  *
- * Model version              : 1.22
- * Simulink Coder version : 8.6 (R2014a) 27-Dec-2013
- * C source code generated on : Wed Feb 25 14:00:14 2015
+ * Model version              : 1.88
+ * Simulink Coder version : 8.8 (R2015a) 09-Feb-2015
+ * C source code generated on : Mon Jan 30 17:06:09 2017
  *
  * Target selection: NIVeriStand_VxWorks.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -13,6 +17,7 @@
  * Code generation objectives: Unspecified
  * Validation result: Not run
  */
+
 #ifndef RTW_HEADER_ctrl_sixaxis2thruster_h_
 #define RTW_HEADER_ctrl_sixaxis2thruster_h_
 #include <math.h>
@@ -21,6 +26,7 @@
 #ifndef ctrl_sixaxis2thruster_COMMON_INCLUDES_
 # define ctrl_sixaxis2thruster_COMMON_INCLUDES_
 #include "rtwtypes.h"
+#include "zero_crossing_types.h"
 #include "simstruc.h"
 #include "fixedpoint.h"
 #include "rt_logging.h"
@@ -139,11 +145,11 @@
 #endif
 
 #ifndef rtmGetIntgData
-# define rtmGetIntgData(rtm)           ()
+# define rtmGetIntgData(rtm)           ((rtm)->ModelData.intgData)
 #endif
 
 #ifndef rtmSetIntgData
-# define rtmSetIntgData(rtm, val)      ()
+# define rtmSetIntgData(rtm, val)      ((rtm)->ModelData.intgData = (val))
 #endif
 
 #ifndef rtmGetMdlRefGlobalTID
@@ -250,6 +256,14 @@
 # define rtmSetNumOutputPorts(rtm, val) ((rtm)->Sizes.numOports = (val))
 #endif
 
+#ifndef rtmGetNumPeriodicContStates
+# define rtmGetNumPeriodicContStates(rtm) ((rtm)->Sizes.numPeriodicContStates)
+#endif
+
+#ifndef rtmSetNumPeriodicContStates
+# define rtmSetNumPeriodicContStates(rtm, val) ((rtm)->Sizes.numPeriodicContStates = (val))
+#endif
+
 #ifndef rtmGetNumSFcnParams
 # define rtmGetNumSFcnParams(rtm)      ((rtm)->Sizes.numSFcnPrms)
 #endif
@@ -291,19 +305,19 @@
 #endif
 
 #ifndef rtmGetOdeF
-# define rtmGetOdeF(rtm)               ()
+# define rtmGetOdeF(rtm)               ((rtm)->ModelData.odeF)
 #endif
 
 #ifndef rtmSetOdeF
-# define rtmSetOdeF(rtm, val)          ()
+# define rtmSetOdeF(rtm, val)          ((rtm)->ModelData.odeF = (val))
 #endif
 
 #ifndef rtmGetOdeY
-# define rtmGetOdeY(rtm)               ()
+# define rtmGetOdeY(rtm)               ((rtm)->ModelData.odeY)
 #endif
 
 #ifndef rtmSetOdeY
-# define rtmSetOdeY(rtm, val)          ()
+# define rtmSetOdeY(rtm, val)          ((rtm)->ModelData.odeY = (val))
 #endif
 
 #ifndef rtmGetOffsetTimeArray
@@ -368,6 +382,22 @@
 
 #ifndef rtmSetPerTaskSampleHitsPtr
 # define rtmSetPerTaskSampleHitsPtr(rtm, val) ((rtm)->Timing.perTaskSampleHits = (val))
+#endif
+
+#ifndef rtmGetPeriodicContStateIndices
+# define rtmGetPeriodicContStateIndices(rtm) ((rtm)->ModelData.periodicContStateIndices)
+#endif
+
+#ifndef rtmSetPeriodicContStateIndices
+# define rtmSetPeriodicContStateIndices(rtm, val) ((rtm)->ModelData.periodicContStateIndices = (val))
+#endif
+
+#ifndef rtmGetPeriodicContStateRanges
+# define rtmGetPeriodicContStateRanges(rtm) ((rtm)->ModelData.periodicContStateRanges)
+#endif
+
+#ifndef rtmSetPeriodicContStateRanges
+# define rtmSetPeriodicContStateRanges(rtm, val) ((rtm)->ModelData.periodicContStateRanges = (val))
 #endif
 
 #ifndef rtmGetPrevZCSigState
@@ -691,7 +721,7 @@
 #endif
 
 #ifndef rtmIsContinuousTask
-# define rtmIsContinuousTask(rtm, tid) 0
+# define rtmIsContinuousTask(rtm, tid) ((tid) == 0)
 #endif
 
 #ifndef rtmGetErrorStatus
@@ -702,8 +732,16 @@
 # define rtmSetErrorStatus(rtm, val)   ((rtm)->errorStatus = (val))
 #endif
 
+#ifndef rtmIsMajorTimeStep
+# define rtmIsMajorTimeStep(rtm)       (((rtm)->Timing.simTimeStep) == MAJOR_TIME_STEP)
+#endif
+
+#ifndef rtmIsMinorTimeStep
+# define rtmIsMinorTimeStep(rtm)       (((rtm)->Timing.simTimeStep) == MINOR_TIME_STEP)
+#endif
+
 #ifndef rtmIsSampleHit
-# define rtmIsSampleHit(rtm, sti, tid) ((rtm)->Timing.sampleHits[(rtm)->Timing.sampleTimeTaskIDPtr[sti]])
+# define rtmIsSampleHit(rtm, sti, tid) ((rtmIsMajorTimeStep((rtm)) && (rtm)->Timing.sampleHits[(rtm)->Timing.sampleTimeTaskIDPtr[sti]]))
 #endif
 
 #ifndef rtmGetStopRequested
@@ -775,67 +813,95 @@
 typedef struct {
   real_T PosXLeft;                     /* '<Root>/PosXLeft' */
   real_T PosYLeft;                     /* '<Root>/PosYLeft' */
-  real_T Saturation;                   /* '<S1>/Saturation' */
-  real_T PosYRight;                    /* '<Root>/PosYRight' */
   real_T PosXRight;                    /* '<Root>/PosXRight' */
-  real_T TrigonometricFunction1;       /* '<S2>/Trigonometric Function1' */
-  real_T TrigonometricFunction1_d;     /* '<S1>/Trigonometric Function1' */
-  real_T Saturation_m;                 /* '<S2>/Saturation' */
+  real_T PosYRight;                    /* '<Root>/PosYRight' */
   real_T Start;                        /* '<Root>/Start' */
   real_T ArrowUp;                      /* '<Root>/ArrowUp' */
-  real_T L2_continuous;                /* '<Root>/L2_continuous' */
   real_T R2_continuous;                /* '<Root>/R2_continuous' */
-  real_T Gain;                         /* '<Root>/Gain' */
+  real_T L2_continuous;                /* '<Root>/L2_continuous' */
+  real_T Memory1;                      /* '<Root>/Memory1' */
   real_T ArrowDown;                    /* '<Root>/ArrowDown' */
-  real_T Saturation_n;                 /* '<S3>/Saturation' */
+  real_T Saturation;                   /* '<Root>/Saturation' */
+  real_T u[2];                         /* '<Root>/right stick' */
+  real_T u_j[2];                       /* '<Root>/ left stick' */
+  real_T y;                            /* '<Root>/ bow thrust' */
 } B_ctrl_sixaxis2thruster_T;
 
 /* Block states (auto storage) for system '<Root>' */
 typedef struct {
-  real_T DelayInput1_DSTATE;           /* '<S4>/Delay Input1' */
-  real_T DelayInput1_DSTATE_i;         /* '<S5>/Delay Input1' */
-  real_T DelayInput1_DSTATE_j;         /* '<S6>/Delay Input1' */
   real_T PosXLeft_DWORK1;              /* '<Root>/PosXLeft' */
   real_T PosYLeft_DWORK1;              /* '<Root>/PosYLeft' */
   real_T u_VSP1_DWORK1;                /* '<Root>/u_VSP1' */
-  real_T PosYRight_DWORK1;             /* '<Root>/PosYRight' */
   real_T PosXRight_DWORK1;             /* '<Root>/PosXRight' */
+  real_T PosYRight_DWORK1;             /* '<Root>/PosYRight' */
   real_T alpha_VSP2_DWORK1;            /* '<Root>/alpha_VSP2' */
   real_T alpha_VSP1_DWORK1;            /* '<Root>/alpha_VSP1' */
   real_T u_VSP2_DWORK1;                /* '<Root>/u_VSP2' */
   real_T Start_DWORK1;                 /* '<Root>/Start' */
   real_T ArrowUp_DWORK1;               /* '<Root>/ArrowUp' */
-  real_T L2_continuous_DWORK1;         /* '<Root>/L2_continuous' */
   real_T R2_continuous_DWORK1;         /* '<Root>/R2_continuous' */
+  real_T L2_continuous_DWORK1;         /* '<Root>/L2_continuous' */
   real_T u_BT_DWORK1;                  /* '<Root>/u_BT' */
-  real_T ArrowDown_DWORK1;             /* '<Root>/ArrowDown' */
-  real_T Memory_PreviousInput;         /* '<S3>/Memory' */
+  real_T Memory1_PreviousInput;        /* '<Root>/Memory1' */
   real_T omega_VSP1_DWORK1;            /* '<Root>/omega_VSP1' */
+  real_T ArrowDown_DWORK1;             /* '<Root>/ArrowDown' */
   real_T omega_VSP2_DWORK1;            /* '<Root>/omega_VSP2' */
   int32_T NIVeriStandSignalProbe_DWORK2;/* '<Root>/NIVeriStandSignalProbe' */
   uint8_T PosXLeft_DWORK2[22];         /* '<Root>/PosXLeft' */
   uint8_T PosYLeft_DWORK2[22];         /* '<Root>/PosYLeft' */
   uint8_T u_VSP1_DWORK2[22];           /* '<Root>/u_VSP1' */
-  uint8_T PosYRight_DWORK2[22];        /* '<Root>/PosYRight' */
   uint8_T PosXRight_DWORK2[22];        /* '<Root>/PosXRight' */
+  uint8_T PosYRight_DWORK2[22];        /* '<Root>/PosYRight' */
   uint8_T alpha_VSP2_DWORK2[22];       /* '<Root>/alpha_VSP2' */
   uint8_T alpha_VSP1_DWORK2[22];       /* '<Root>/alpha_VSP1' */
   uint8_T u_VSP2_DWORK2[22];           /* '<Root>/u_VSP2' */
   uint8_T Start_DWORK2[22];            /* '<Root>/Start' */
   uint8_T ArrowUp_DWORK2[22];          /* '<Root>/ArrowUp' */
-  uint8_T L2_continuous_DWORK2[22];    /* '<Root>/L2_continuous' */
   uint8_T R2_continuous_DWORK2[22];    /* '<Root>/R2_continuous' */
+  uint8_T L2_continuous_DWORK2[22];    /* '<Root>/L2_continuous' */
   uint8_T u_BT_DWORK2[22];             /* '<Root>/u_BT' */
-  uint8_T ArrowDown_DWORK2[22];        /* '<Root>/ArrowDown' */
   uint8_T omega_VSP1_DWORK2[22];       /* '<Root>/omega_VSP1' */
+  uint8_T ArrowDown_DWORK2[22];        /* '<Root>/ArrowDown' */
   uint8_T omega_VSP2_DWORK2[22];       /* '<Root>/omega_VSP2' */
   uint8_T NIVeriStandSignalProbe_DWORK1[22];/* '<Root>/NIVeriStandSignalProbe' */
   uint8_T NIVeriStandSignalProbe_DWORK3[65];/* '<Root>/NIVeriStandSignalProbe' */
 } DW_ctrl_sixaxis2thruster_T;
 
+/* Continuous states (auto storage) */
+typedef struct {
+  real_T Integrator_CSTATE;            /* '<Root>/Integrator' */
+} X_ctrl_sixaxis2thruster_T;
+
+/* State derivatives (auto storage) */
+typedef struct {
+  real_T Integrator_CSTATE;            /* '<Root>/Integrator' */
+} XDot_ctrl_sixaxis2thruster_T;
+
+/* State disabled  */
+typedef struct {
+  boolean_T Integrator_CSTATE;         /* '<Root>/Integrator' */
+} XDis_ctrl_sixaxis2thruster_T;
+
+#ifndef ODE3_INTG
+#define ODE3_INTG
+
+/* ODE3 Integration Data */
+typedef struct {
+  real_T *y;                           /* output */
+  real_T *f[3];                        /* derivatives */
+} ODE3_IntgData;
+
+#endif
+
 /* Backward compatible GRT Identifiers */
 #define rtB                            ctrl_sixaxis2thruster_B
 #define BlockIO                        B_ctrl_sixaxis2thruster_T
+#define rtX                            ctrl_sixaxis2thruster_X
+#define ContinuousStates               X_ctrl_sixaxis2thruster_T
+#define rtXdot                         ctrl_sixaxis2thruster_XDot
+#define StateDerivatives               XDot_ctrl_sixaxis2thruster_T
+#define tXdis                          ctrl_sixaxis2thruster_XDis
+#define StateDisabled                  XDis_ctrl_sixaxis2thruster_T
 #define rtP                            ctrl_sixaxis2thruster_P
 #define Parameters                     P_ctrl_sixaxis2thruster_T
 #define rtDWork                        ctrl_sixaxis2thruster_DW
@@ -843,15 +909,6 @@ typedef struct {
 
 /* Parameters (auto storage) */
 struct P_ctrl_sixaxis2thruster_T_ {
-  real_T DetectIncrease_vinit;         /* Mask Parameter: DetectIncrease_vinit
-                                        * Referenced by: '<S4>/Delay Input1'
-                                        */
-  real_T DetectIncrease1_vinit;        /* Mask Parameter: DetectIncrease1_vinit
-                                        * Referenced by: '<S5>/Delay Input1'
-                                        */
-  real_T DetectIncrease2_vinit;        /* Mask Parameter: DetectIncrease2_vinit
-                                        * Referenced by: '<S6>/Delay Input1'
-                                        */
   real_T PosXLeft_P1;                  /* Expression: width
                                         * Referenced by: '<Root>/PosXLeft'
                                         */
@@ -888,15 +945,6 @@ struct P_ctrl_sixaxis2thruster_T_ {
   real_T PosYLeft_P6;                  /* Expression: btype
                                         * Referenced by: '<Root>/PosYLeft'
                                         */
-  real_T Gain_Gain;                    /* Expression: -1
-                                        * Referenced by: '<S1>/Gain'
-                                        */
-  real_T Saturation_UpperSat;          /* Expression: 1
-                                        * Referenced by: '<S1>/Saturation'
-                                        */
-  real_T Saturation_LowerSat;          /* Expression: -1
-                                        * Referenced by: '<S1>/Saturation'
-                                        */
   real_T u_VSP1_P1;                    /* Expression: width
                                         * Referenced by: '<Root>/u_VSP1'
                                         */
@@ -915,27 +963,6 @@ struct P_ctrl_sixaxis2thruster_T_ {
   real_T u_VSP1_P6;                    /* Expression: btype
                                         * Referenced by: '<Root>/u_VSP1'
                                         */
-  real_T PosYRight_P1;                 /* Expression: width
-                                        * Referenced by: '<Root>/PosYRight'
-                                        */
-  real_T PosYRight_P2;                 /* Expression: dtype
-                                        * Referenced by: '<Root>/PosYRight'
-                                        */
-  real_T PosYRight_P3;                 /* Expression: portnum
-                                        * Referenced by: '<Root>/PosYRight'
-                                        */
-  real_T PosYRight_P4;                 /* Expression: stime
-                                        * Referenced by: '<Root>/PosYRight'
-                                        */
-  real_T PosYRight_P5;                 /* Expression: stype
-                                        * Referenced by: '<Root>/PosYRight'
-                                        */
-  real_T PosYRight_P6;                 /* Expression: btype
-                                        * Referenced by: '<Root>/PosYRight'
-                                        */
-  real_T Gain_Gain_o;                  /* Expression: -1
-                                        * Referenced by: '<S2>/Gain'
-                                        */
   real_T PosXRight_P1;                 /* Expression: width
                                         * Referenced by: '<Root>/PosXRight'
                                         */
@@ -953,6 +980,24 @@ struct P_ctrl_sixaxis2thruster_T_ {
                                         */
   real_T PosXRight_P6;                 /* Expression: btype
                                         * Referenced by: '<Root>/PosXRight'
+                                        */
+  real_T PosYRight_P1;                 /* Expression: width
+                                        * Referenced by: '<Root>/PosYRight'
+                                        */
+  real_T PosYRight_P2;                 /* Expression: dtype
+                                        * Referenced by: '<Root>/PosYRight'
+                                        */
+  real_T PosYRight_P3;                 /* Expression: portnum
+                                        * Referenced by: '<Root>/PosYRight'
+                                        */
+  real_T PosYRight_P4;                 /* Expression: stime
+                                        * Referenced by: '<Root>/PosYRight'
+                                        */
+  real_T PosYRight_P5;                 /* Expression: stype
+                                        * Referenced by: '<Root>/PosYRight'
+                                        */
+  real_T PosYRight_P6;                 /* Expression: btype
+                                        * Referenced by: '<Root>/PosYRight'
                                         */
   real_T alpha_VSP2_P1;                /* Expression: width
                                         * Referenced by: '<Root>/alpha_VSP2'
@@ -989,12 +1034,6 @@ struct P_ctrl_sixaxis2thruster_T_ {
                                         */
   real_T alpha_VSP1_P6;                /* Expression: btype
                                         * Referenced by: '<Root>/alpha_VSP1'
-                                        */
-  real_T Saturation_UpperSat_n;        /* Expression: 1
-                                        * Referenced by: '<S2>/Saturation'
-                                        */
-  real_T Saturation_LowerSat_j;        /* Expression: -1
-                                        * Referenced by: '<S2>/Saturation'
                                         */
   real_T u_VSP2_P1;                    /* Expression: width
                                         * Referenced by: '<Root>/u_VSP2'
@@ -1050,24 +1089,6 @@ struct P_ctrl_sixaxis2thruster_T_ {
   real_T ArrowUp_P6;                   /* Expression: btype
                                         * Referenced by: '<Root>/ArrowUp'
                                         */
-  real_T L2_continuous_P1;             /* Expression: width
-                                        * Referenced by: '<Root>/L2_continuous'
-                                        */
-  real_T L2_continuous_P2;             /* Expression: dtype
-                                        * Referenced by: '<Root>/L2_continuous'
-                                        */
-  real_T L2_continuous_P3;             /* Expression: portnum
-                                        * Referenced by: '<Root>/L2_continuous'
-                                        */
-  real_T L2_continuous_P4;             /* Expression: stime
-                                        * Referenced by: '<Root>/L2_continuous'
-                                        */
-  real_T L2_continuous_P5;             /* Expression: stype
-                                        * Referenced by: '<Root>/L2_continuous'
-                                        */
-  real_T L2_continuous_P6;             /* Expression: btype
-                                        * Referenced by: '<Root>/L2_continuous'
-                                        */
   real_T R2_continuous_P1;             /* Expression: width
                                         * Referenced by: '<Root>/R2_continuous'
                                         */
@@ -1086,8 +1107,23 @@ struct P_ctrl_sixaxis2thruster_T_ {
   real_T R2_continuous_P6;             /* Expression: btype
                                         * Referenced by: '<Root>/R2_continuous'
                                         */
-  real_T Gain_Gain_e;                  /* Expression: -.5
-                                        * Referenced by: '<Root>/Gain'
+  real_T L2_continuous_P1;             /* Expression: width
+                                        * Referenced by: '<Root>/L2_continuous'
+                                        */
+  real_T L2_continuous_P2;             /* Expression: dtype
+                                        * Referenced by: '<Root>/L2_continuous'
+                                        */
+  real_T L2_continuous_P3;             /* Expression: portnum
+                                        * Referenced by: '<Root>/L2_continuous'
+                                        */
+  real_T L2_continuous_P4;             /* Expression: stime
+                                        * Referenced by: '<Root>/L2_continuous'
+                                        */
+  real_T L2_continuous_P5;             /* Expression: stype
+                                        * Referenced by: '<Root>/L2_continuous'
+                                        */
+  real_T L2_continuous_P6;             /* Expression: btype
+                                        * Referenced by: '<Root>/L2_continuous'
                                         */
   real_T u_BT_P1;                      /* Expression: width
                                         * Referenced by: '<Root>/u_BT'
@@ -1107,32 +1143,8 @@ struct P_ctrl_sixaxis2thruster_T_ {
   real_T u_BT_P6;                      /* Expression: btype
                                         * Referenced by: '<Root>/u_BT'
                                         */
-  real_T ArrowDown_P1;                 /* Expression: width
-                                        * Referenced by: '<Root>/ArrowDown'
-                                        */
-  real_T ArrowDown_P2;                 /* Expression: dtype
-                                        * Referenced by: '<Root>/ArrowDown'
-                                        */
-  real_T ArrowDown_P3;                 /* Expression: portnum
-                                        * Referenced by: '<Root>/ArrowDown'
-                                        */
-  real_T ArrowDown_P4;                 /* Expression: stime
-                                        * Referenced by: '<Root>/ArrowDown'
-                                        */
-  real_T ArrowDown_P5;                 /* Expression: stype
-                                        * Referenced by: '<Root>/ArrowDown'
-                                        */
-  real_T ArrowDown_P6;                 /* Expression: btype
-                                        * Referenced by: '<Root>/ArrowDown'
-                                        */
-  real_T Memory_X0;                    /* Expression: 0
-                                        * Referenced by: '<S3>/Memory'
-                                        */
-  real_T Saturation_UpperSat_l;        /* Expression: 0.8
-                                        * Referenced by: '<S3>/Saturation'
-                                        */
-  real_T Saturation_LowerSat_o;        /* Expression: -0.8
-                                        * Referenced by: '<S3>/Saturation'
+  real_T Memory1_X0;                   /* Expression: 0
+                                        * Referenced by: '<Root>/Memory1'
                                         */
   real_T omega_VSP1_P1;                /* Expression: width
                                         * Referenced by: '<Root>/omega_VSP1'
@@ -1152,6 +1164,24 @@ struct P_ctrl_sixaxis2thruster_T_ {
   real_T omega_VSP1_P6;                /* Expression: btype
                                         * Referenced by: '<Root>/omega_VSP1'
                                         */
+  real_T ArrowDown_P1;                 /* Expression: width
+                                        * Referenced by: '<Root>/ArrowDown'
+                                        */
+  real_T ArrowDown_P2;                 /* Expression: dtype
+                                        * Referenced by: '<Root>/ArrowDown'
+                                        */
+  real_T ArrowDown_P3;                 /* Expression: portnum
+                                        * Referenced by: '<Root>/ArrowDown'
+                                        */
+  real_T ArrowDown_P4;                 /* Expression: stime
+                                        * Referenced by: '<Root>/ArrowDown'
+                                        */
+  real_T ArrowDown_P5;                 /* Expression: stype
+                                        * Referenced by: '<Root>/ArrowDown'
+                                        */
+  real_T ArrowDown_P6;                 /* Expression: btype
+                                        * Referenced by: '<Root>/ArrowDown'
+                                        */
   real_T omega_VSP2_P1;                /* Expression: width
                                         * Referenced by: '<Root>/omega_VSP2'
                                         */
@@ -1169,6 +1199,18 @@ struct P_ctrl_sixaxis2thruster_T_ {
                                         */
   real_T omega_VSP2_P6;                /* Expression: btype
                                         * Referenced by: '<Root>/omega_VSP2'
+                                        */
+  real_T Constant_Value;               /* Expression: 1
+                                        * Referenced by: '<Root>/Constant'
+                                        */
+  real_T Integrator_IC;                /* Expression: 0
+                                        * Referenced by: '<Root>/Integrator'
+                                        */
+  real_T Saturation_UpperSat;          /* Expression: 0.5
+                                        * Referenced by: '<Root>/Saturation'
+                                        */
+  real_T Saturation_LowerSat;          /* Expression: -0.5
+                                        * Referenced by: '<Root>/Saturation'
                                         */
   real_T NIVeriStandSignalProbe_P1;    /* Expression: 1
                                         * Referenced by: '<Root>/NIVeriStandSignalProbe'
@@ -1199,6 +1241,8 @@ struct tag_RTM_ctrl_sixaxis2thruster_T {
     void *defaultParam;
     ZCSigState *prevZCSigState;
     real_T *contStates;
+    int_T *periodicContStateIndices;
+    real_T *periodicContStateRanges;
     real_T *derivs;
     void *zcSignalValues;
     void *inputs;
@@ -1207,6 +1251,9 @@ struct tag_RTM_ctrl_sixaxis2thruster_T {
     boolean_T zCCacheNeedsReset;
     boolean_T derivCacheNeedsReset;
     boolean_T blkStateChange;
+    real_T odeY[1];
+    real_T odeF[3][1];
+    ODE3_IntgData intgData;
     void *dwork;
   } ModelData;
 
@@ -1220,6 +1267,7 @@ struct tag_RTM_ctrl_sixaxis2thruster_T {
     uint32_T checksums[4];
     uint32_T options;
     int_T numContStates;
+    int_T numPeriodicContStates;
     int_T numU;
     int_T numY;
     int_T numSampTimes;
@@ -1256,6 +1304,9 @@ struct tag_RTM_ctrl_sixaxis2thruster_T {
     uint32_T clockTick0;
     uint32_T clockTickH0;
     time_T stepSize0;
+    uint32_T clockTick1;
+    uint32_T clockTickH1;
+    time_T stepSize1;
     time_T tStart;
     time_T tFinal;
     time_T timeOfLastOutput;
@@ -1269,12 +1320,12 @@ struct tag_RTM_ctrl_sixaxis2thruster_T {
     int_T *sampleHits;
     int_T *perTaskSampleHits;
     time_T *t;
-    time_T sampleTimesArray[1];
-    time_T offsetTimesArray[1];
-    int_T sampleTimeTaskIDArray[1];
-    int_T sampleHitArray[1];
-    int_T perTaskSampleHitsArray[1];
-    time_T tArray[1];
+    time_T sampleTimesArray[2];
+    time_T offsetTimesArray[2];
+    int_T sampleTimeTaskIDArray[2];
+    int_T sampleHitArray[2];
+    int_T perTaskSampleHitsArray[4];
+    time_T tArray[2];
   } Timing;
 };
 
@@ -1284,8 +1335,29 @@ extern P_ctrl_sixaxis2thruster_T ctrl_sixaxis2thruster_P;
 /* Block signals (auto storage) */
 extern B_ctrl_sixaxis2thruster_T ctrl_sixaxis2thruster_B;
 
+/* Continuous states (auto storage) */
+extern X_ctrl_sixaxis2thruster_T ctrl_sixaxis2thruster_X;
+
 /* Block states (auto storage) */
 extern DW_ctrl_sixaxis2thruster_T ctrl_sixaxis2thruster_DW;
+
+/* Model entry point functions */
+extern void ctrl_sixaxis2thruster_initialize(void);
+extern void ctrl_sixaxis2thruster_output(void);
+extern void ctrl_sixaxis2thruster_update(void);
+extern void ctrl_sixaxis2thruster_terminate(void);
+
+/*====================*
+ * External functions *
+ *====================*/
+extern ctrl_sixaxis2thruster_rtModel *ctrl_sixaxis2thruster(void);
+extern void MdlInitializeSizes(void);
+extern void MdlInitializeSampleTimes(void);
+extern void MdlInitialize(void);
+extern void MdlStart(void);
+extern void MdlOutputs(int_T tid);
+extern void MdlUpdate(int_T tid);
+extern void MdlTerminate(void);
 
 /* Real-time Model object */
 extern RT_MODEL_ctrl_sixaxis2thruste_T *const ctrl_sixaxis2thruster_M;
@@ -1305,13 +1377,11 @@ extern RT_MODEL_ctrl_sixaxis2thruste_T *const ctrl_sixaxis2thruster_M;
  * Here is the system hierarchy for this model
  *
  * '<Root>' : 'ctrl_sixaxis2thruster'
- * '<S1>'   : 'ctrl_sixaxis2thruster/Subsystem'
- * '<S2>'   : 'ctrl_sixaxis2thruster/Subsystem1'
- * '<S3>'   : 'ctrl_sixaxis2thruster/VSP omega'
- * '<S4>'   : 'ctrl_sixaxis2thruster/VSP omega/Detect Increase'
- * '<S5>'   : 'ctrl_sixaxis2thruster/VSP omega/Detect Increase1'
- * '<S6>'   : 'ctrl_sixaxis2thruster/VSP omega/Detect Increase2'
- * '<S7>'   : 'ctrl_sixaxis2thruster/VSP omega/MATLAB Function'
+ * '<S1>'   : 'ctrl_sixaxis2thruster/ bow thrust'
+ * '<S2>'   : 'ctrl_sixaxis2thruster/ left stick'
+ * '<S3>'   : 'ctrl_sixaxis2thruster/MATLAB Function'
+ * '<S4>'   : 'ctrl_sixaxis2thruster/arrows'
+ * '<S5>'   : 'ctrl_sixaxis2thruster/right stick'
  */
 #endif                                 /* RTW_HEADER_ctrl_sixaxis2thruster_h_ */
 
@@ -1330,6 +1400,8 @@ int tid = 0;
 
 P_ctrl_sixaxis2thruster_T rtParameter[NUMST+!TID01EQ];
 P_ctrl_sixaxis2thruster_T *param_lookup[NUMST][2] = {
+  { &rtParameter[0], &rtParameter[1] },
+
   { &rtParameter[0], &rtParameter[1] },
 };
 
